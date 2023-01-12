@@ -20,6 +20,10 @@ const injectContext = (PassedComponent) => {
         )
         
         useEffect(() => {
+
+          setTimeout(() => {
+            state.actions.started()
+          }, 5000);
             
         }, [])
 
