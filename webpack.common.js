@@ -12,6 +12,10 @@ module.exports = {
         publicPath: '/'
     },
 
+    devServer:{
+        historyApiFallback: true,
+    },
+
     module: {
         rules: [
             {

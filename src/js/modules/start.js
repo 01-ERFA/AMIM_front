@@ -1,4 +1,0 @@
-
-function no_name(){
-
-}

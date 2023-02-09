@@ -21,10 +21,7 @@ const injectContext = (PassedComponent) => {
         
         useEffect(() => {
 
-          setTimeout(() => {
-            state.actions.started()
-          }, 5000);
-            
+          state.actions.webApp.loading.languages()
         }, [])
 
         return (

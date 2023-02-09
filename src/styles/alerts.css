@@ -1,0 +1,26 @@
+.alert_disconnection_0{
+    background: #34495e;
+
+    min-height: 100vh;
+    min-width: 100%;
+
+    z-index: 10;
+    position: fixed;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #c7ecee;
+
+    opacity: 0.7;
+    text-align: center;
+
+    transition: opacity 3350ms ease-out;
+}
+
+@media (min-width: 400px) {
+    .alert_disconnection_0{
+        font-size: 3vw;
+    }
+}
