@@ -22,7 +22,8 @@ const injectContext = (PassedComponent) => {
         useEffect(() => {
 
           state.actions.webApp.loading.languages()
-          state.actions.testing.testing_localStorage()
+          // state.actions.testing.testing_localStorage()
+          state.actions.webApp.store.pathname()
         }, [])
 
         return (

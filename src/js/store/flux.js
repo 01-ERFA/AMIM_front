@@ -49,35 +49,35 @@ const getState = ({ getStore, getActions, setStore }) => {
                         test: 'testing object'
                     })
                     console.log(getActions().localStorage.get('test'))
-
-                    getActions().localStorage.post({}, 'hola')
-
-                    console.log(getActions().localStorage.get({test: 'hola'}))
-
-                },
-            },
-
-            localStorage: {
-                get: (item)=>{
-                    return JSON.parse(localStorage.getItem(item))
-                },
-                post: (item, value)=>{
-                    if (typeof item !== 'string') {
-                        return false
-                    }
-                    localStorage.setItem(item, JSON.stringify(value))
-                    return true
-                },
-                delete: (item)=>{
-                    localStorage.removeItem(item)
-                },
-                put: (item, new_value)=>{
-                  getActions().localStorage.delete(item)
-                  getActions().localStorage.post(item, new_value)
                 },
             },
 
             webApp: {
+
+                store: {
+                    animations: {
+                        loading: ()=>{
+                            setStore({ started_animation:true })
+                        },
+                    },
+                    alerts: {
+                        disconnected_server_0:()=>{
+                            setStore({ connected_server_0: false })
+                        },
+                        connected_server_0:()=>{
+                            setStore({ connected_server_0: true })
+                        },
+                    },
+
+
+                    pathname: ()=>{
+                        setStore({pathname: location.pathname})
+                    },
+
+                    set_reconnection_time: (new_time)=>{
+                        setStore({ reconnection_time: new_time })
+                    },
+                },
 
                 loading: {
                     languages: async ()=>{
@@ -86,13 +86,13 @@ const getState = ({ getStore, getActions, setStore }) => {
                             'conection_success': ()=>{
                                 getStore().connected_server_0 === true
                                     ?null
-                                    :getActions().alerts.connected_server_0()
+                                    :getActions().webApp.store.alerts.connected_server_0()
 
                                 setStore({ language: response?.data?.languages })
                             },
                             'conection_failed': ()=>{
-                                getActions().alerts.disconnected_server_0()
-                                getActions().webApp.others.set_reconnection_time(getStore().reconnection_time*2)
+                                getActions().webApp.store.alerts.disconnected_server_0()
+                                getActions().webApp.store.set_reconnection_time(getStore().reconnection_time*2)
                                 setTimeout(() => {
                                     getActions().webApp.loading.languages()
                                 }, getStore().reconnection_time);
@@ -109,7 +109,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                             ()=>local_actions.conection_failed())
                     },
 
-                    starting: (id_language)=>{
+                    onLoad: (id_language)=>{
 
                         console.log('starting', id_language)
                         console.log(getStore().language);
@@ -141,45 +141,17 @@ const getState = ({ getStore, getActions, setStore }) => {
                             try {
                                 status_true()
                             } catch (error) {
-                            } //finally{
-
-                           // }
+                            }
                         }
                         if (condition === false) {
                             try {
                                 status_false()
                             } catch (error) {
-                            } //finally{
-
-                           // }
+                            } 
                         }
                     },
-                    set_reconnection_time: (new_time)=>{
-                        console.log(new_time)
-                        setStore({ reconnection_time: new_time })
-                    },
                 },
 
-            },
-
-
-            animations: {
-                loading: ()=>{
-                    setStore({ started_animation:true })
-                },
-
-                //
-            },
-
-            alerts: {
-                disconnected_server_0:()=>{
-                    setStore({ connected_server_0: false })
-                },
-                connected_server_0:()=>{
-                    setStore({ connected_server_0: true })
-                },
-
-                //
             },
 
             requests: {
@@ -195,7 +167,27 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 
                     //
-                }
+            },
+
+            localStorage: {
+                get: (item)=>{
+                    return JSON.parse(localStorage.getItem(item))
+                },
+                post: (item, value)=>{
+                    if (typeof item !== 'string') {
+                        return false
+                    }
+                    localStorage.setItem(item, JSON.stringify(value))
+                    return true
+                },
+                delete: (item)=>{
+                    localStorage.removeItem(item)
+                },
+                put: (item, new_value)=>{
+                  getActions().localStorage.delete(item)
+                  getActions().localStorage.post(item, new_value)
+                },
+            },
 
 
             //
