@@ -3,7 +3,7 @@ const getState = ({ getStore, getActions, setStore }) => {
     return {
         store: {
             // env data
-            basename: process.env.BASENAME || "/",
+            basename: process.env.BASENAME || '/',
             api_url: 'http://127.0.0.1:4000/api/',
 
             
@@ -88,9 +88,10 @@ const getState = ({ getStore, getActions, setStore }) => {
                     },
 
                     pathname: (value)=>{
-                        setStore( { pathname: value===undefined
-                            ?location.pathname
-                            :value })
+                        setStore( { pathname: value === undefined
+                            ? location.pathname
+                            : value
+                         })
                     },
 
                     set_reconnection_time: (value)=>{
@@ -100,21 +101,22 @@ const getState = ({ getStore, getActions, setStore }) => {
 
                 onLoad: async ()=>{
                     const webApp = getActions().webApp
-                    webApp.store.pathname()
-                    webApp.store.set_reconnection_time(10000)
-                    // webApp.store.browserRouter(undefined)
+                    const lS = getActions().localStorage
 
-                    const connect = await webApp.connection.connect(()=>{}, ()=>{})
-                    webApp.others.validation(
-                        connect === true,
+                    webApp.store.set_reconnection_time(10000)
+                    await webApp.store.pathname()
+
+
+                    lS.post('pathname', getStore().pathname)
+                    
+                    await webApp.connection.connect(
                         ()=>{
                             webApp.site.languages()
-                        },
+                            // webApp.store.browserRouter(0)
+                        }, 
                         ()=>{
-                            webApp.connection.reconnect(webApp.onLoad)
-                        }
-                    )
-                    
+                            webApp.onLoad()
+                        })
 
                 },
 

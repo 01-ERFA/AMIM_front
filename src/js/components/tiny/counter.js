@@ -8,7 +8,7 @@ const Counter = (props)=>{
 
     useEffect(()=>{
         if (typeof counter !== 'number') {
-            setCounter(props.max_range)
+            setCounter(props?.scaled === 'increase'?props?.min_range:props?.max_range)
         }
         if (typeof counter === 'number') {
             setTimeout(() => {

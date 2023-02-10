@@ -35,7 +35,7 @@ function Layout() {
                   <Navbar />
                   <Routes>
                   
-                    <Route element={<Home />} path="/" />
+                    <Route element={<Home />} path='/' />
 
                   </Routes>
                   <Footer />
