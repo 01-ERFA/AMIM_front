@@ -14,14 +14,14 @@ import Home from "./views/home";
 
 function Layout() {
   const { store, actions } = useContext(Context);
-
+ 
   return (
     <>
 
       <Alert_disconnection_0 connection={store?.connected_server_0} reconnection_time={store?.reconnection_time} />
 
       {
-        store?.started_animation === false
+        store?.browserRouter === undefined
           ?
             <BrowserRouter basename={store?.basename} >
               <Routes>
@@ -29,18 +29,18 @@ function Layout() {
               </Routes>
             </BrowserRouter>
           :
-            <BrowserRouter basename={store?.basename} >
-              <Navbar />
-              <Routes>
-              
-                <Route element={<Home />} path="/" />
+            store?.browserRouter === 0
+              ?
+                <BrowserRouter basename={store?.basename} >
+                  <Navbar />
+                  <Routes>
+                  
+                    <Route element={<Home />} path="/" />
 
-                {/* <Route element={<NAME ############################### />} path='*' */}
-
-
-              </Routes>
-              <Footer />
-            </BrowserRouter>
+                  </Routes>
+                  <Footer />
+                </BrowserRouter>
+              :null
       }
 
     </>

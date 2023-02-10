@@ -20,10 +20,8 @@ const injectContext = (PassedComponent) => {
         )
         
         useEffect(() => {
-
-          state.actions.webApp.loading.languages()
+          state.actions.webApp.onLoad()
           // state.actions.testing.testing_localStorage()
-          state.actions.webApp.store.pathname()
         }, [])
 
         return (

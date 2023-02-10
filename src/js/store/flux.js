@@ -8,26 +8,22 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             
             // pages and objects
+            browserRouter: undefined,
             pathname: undefined,
             settings: undefined,
 
 
-            language: localStorage.getItem('language') === null || localStorage.getItem('language') === undefined
-            ? undefined
-            :localStorage.getItem('language'),
+            language: undefined,
             
             
             // user
             logged_in: undefined,
             token_login: undefined,
             
-            
-            // animations
-            started_animation: false,
 
             // alerts and others
-            reconnection_time: 10000,
-            connected_server_0: true,
+            reconnection_time: undefined,
+            connected_server_0: undefined,
         }, 
         actions: {
 
@@ -53,70 +49,76 @@ const getState = ({ getStore, getActions, setStore }) => {
             },
 
             webApp: {
-
                 connection: {
                     connect: async (status_true, status_false)=>{
                         const response = await getActions().requests.ping()
-                        getActions().webApp.others.validation(
+                        return getActions().webApp.others.validation(
                             response?.data?.status === true,
                             ()=>{
-                                getActions().webApp.store.alerts.connected_server_0();
+                                getActions().webApp.store.alerts.connected_server_0(true);
                                 status_true()
                             },
                             ()=>getActions().webApp.connection.reconnect(status_false)
                         )
                     },
                     reconnect: (action)=>{
-                        getActions().webApp.store.alerts.disconnected_server_0()
-                        getActions().webApp.store.set_reconnection_time(getStore().reconnection_time*2)
+                        getActions().webApp.store.alerts.connected_server_0(false)
                         setTimeout(() => {
                             try {
                                 action()
                             } catch (error) {
-                                console.log(error)
                             }
                         }, getStore().reconnection_time);
                     },
                 },
 
                 store: {
-                    animations: {
-                        loading: ()=>{
-                            setStore({ started_animation:true })
+                    alerts: {
+                        connected_server_0:(value)=>{
+                            setStore({ connected_server_0: value })
                         },
                     },
-                    alerts: {
-                        disconnected_server_0:()=>{
-                            setStore({ connected_server_0: false })
-                        },
-                        connected_server_0:()=>{
-                            setStore({ connected_server_0: true })
-                        },
+
+                    browserRouter: (value)=>{
+                        setStore( { browserRouter: value } )
                     },
 
                     language: (value)=>{
-                        setStore({language: value})
+                        setStore( { language: value } )
                     },
 
                     pathname: (value)=>{
-                        setStore({pathname: value===undefined?location.pathname:value})
+                        setStore( { pathname: value===undefined
+                            ?location.pathname
+                            :value })
                     },
 
-                    set_reconnection_time: (new_time)=>{
-                        setStore({ reconnection_time: new_time })
+                    set_reconnection_time: (value)=>{
+                        setStore({ reconnection_time: value })
                     },
                 },
 
-                onLoad: ()=>{
-                    const actions = getActions()
+                onLoad: async ()=>{
+                    const webApp = getActions().webApp
+                    webApp.store.pathname()
+                    webApp.store.set_reconnection_time(10000)
+                    // webApp.store.browserRouter(undefined)
 
-
-
-
+                    const connect = await webApp.connection.connect(()=>{}, ()=>{})
+                    webApp.others.validation(
+                        connect === true,
+                        ()=>{
+                            webApp.site.languages()
+                        },
+                        ()=>{
+                            webApp.connection.reconnect(webApp.onLoad)
+                        }
+                    )
+                    
 
                 },
 
-                loading: {
+                site: {
                     languages: async ()=>{
                         const response = await getActions().requests.loading()
                         getActions().webApp.others.validation(
@@ -125,14 +127,14 @@ const getState = ({ getStore, getActions, setStore }) => {
                                 response?.status === 200,
                                 ()=>getActions().webApp.connection.connect(
                                     ()=>getActions().webApp.store.language(response?.data?.languages),
-                                    ()=>getActions().webApp.loading.languages()
+                                    ()=>getActions().webApp.site.languages()
                                 ),
                                 ()=>getActions().webApp.connection.reconnect(
-                                    ()=>getActions().webApp.loading.languages()
+                                    ()=>getActions().webApp.site.languages()
                                 )
                             ),
                             ()=>getActions().webApp.connection.reconnect(
-                                ()=>getActions().webApp.loading.languages()
+                                ()=>getActions().webApp.site.languages()
                             )
                         )
                     },
