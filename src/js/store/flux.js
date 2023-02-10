@@ -54,6 +54,31 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             webApp: {
 
+                connection: {
+                    connect: async (status_true, status_false)=>{
+                        const response = await getActions().requests.ping()
+                        getActions().webApp.others.validation(
+                            response?.data?.status === true,
+                            ()=>{
+                                getActions().webApp.store.alerts.connected_server_0();
+                                status_true()
+                            },
+                            ()=>getActions().webApp.connection.reconnect(status_false)
+                        )
+                    },
+                    reconnect: (action)=>{
+                        getActions().webApp.store.alerts.disconnected_server_0()
+                        getActions().webApp.store.set_reconnection_time(getStore().reconnection_time*2)
+                        setTimeout(() => {
+                            try {
+                                action()
+                            } catch (error) {
+                                console.log(error)
+                            }
+                        }, getStore().reconnection_time);
+                    },
+                },
+
                 store: {
                     animations: {
                         loading: ()=>{
@@ -69,9 +94,12 @@ const getState = ({ getStore, getActions, setStore }) => {
                         },
                     },
 
+                    language: (value)=>{
+                        setStore({language: value})
+                    },
 
-                    pathname: ()=>{
-                        setStore({pathname: location.pathname})
+                    pathname: (value)=>{
+                        setStore({pathname: value===undefined?location.pathname:value})
                     },
 
                     set_reconnection_time: (new_time)=>{
@@ -79,45 +107,34 @@ const getState = ({ getStore, getActions, setStore }) => {
                     },
                 },
 
+                onLoad: ()=>{
+                    const actions = getActions()
+
+
+
+
+
+                },
+
                 loading: {
                     languages: async ()=>{
                         const response = await getActions().requests.loading()
-                        const local_actions = {
-                            'conection_success': ()=>{
-                                getStore().connected_server_0 === true
-                                    ?null
-                                    :getActions().webApp.store.alerts.connected_server_0()
-
-                                setStore({ language: response?.data?.languages })
-                            },
-                            'conection_failed': ()=>{
-                                getActions().webApp.store.alerts.disconnected_server_0()
-                                getActions().webApp.store.set_reconnection_time(getStore().reconnection_time*2)
-                                setTimeout(() => {
-                                    getActions().webApp.loading.languages()
-                                }, getStore().reconnection_time);
-                            }
-                        }
-
                         getActions().webApp.others.validation(
                             response !== false || response?.status !== undefined,
                             ()=>getActions().webApp.others.validation(
                                 response?.status === 200,
-                                ()=>local_actions.conection_success(),
-                                ()=>local_actions.conection_failed()
+                                ()=>getActions().webApp.connection.connect(
+                                    ()=>getActions().webApp.store.language(response?.data?.languages),
+                                    ()=>getActions().webApp.loading.languages()
+                                ),
+                                ()=>getActions().webApp.connection.reconnect(
+                                    ()=>getActions().webApp.loading.languages()
+                                )
                             ),
-                            ()=>local_actions.conection_failed())
-                    },
-
-                    onLoad: (id_language)=>{
-
-                        console.log('starting', id_language)
-                        console.log(getStore().language);
-
-                        if (getStore().language === undefined) {
-                            console.log(true)
-                        }
-
+                            ()=>getActions().webApp.connection.reconnect(
+                                ()=>getActions().webApp.loading.languages()
+                            )
+                        )
                     },
                     
                     login: ()=>{
@@ -141,13 +158,17 @@ const getState = ({ getStore, getActions, setStore }) => {
                             try {
                                 status_true()
                             } catch (error) {
+                            } finally {
+                                return true
                             }
                         }
                         if (condition === false) {
                             try {
                                 status_false()
                             } catch (error) {
-                            } 
+                            } finally {
+                                return false
+                            }
                         }
                     },
                 },
@@ -160,10 +181,18 @@ const getState = ({ getStore, getActions, setStore }) => {
                         const response = await axios.get(getStore().api_url+'loading');
                         return response;
                       } catch (error) {
-                        console.log(error);
+                        // console.log(error);
                         return false;
                       }
                     },
+                ping: async ()=>{
+                    try {
+                        const response = await axios.get(getStore().api_url+'ping')
+                        return response;
+                    } catch (error) {
+                        return false;
+                    }
+                },
 
 
                     //
